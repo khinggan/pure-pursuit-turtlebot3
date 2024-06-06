@@ -2,7 +2,8 @@
 
 import rospy
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Pose, Twist
+from geometry_msgs.msg import Pose, Twist, Point
+from visualization_msgs.msg import Marker
 import numpy as np
 import math
 import tf
@@ -22,9 +23,9 @@ class PurePursuitTurtlebot3:
         self.Kp_rho = 3
         self.Kp_alpha = 8
         self.Kp_beta = -1.5
-        self.WaypointType = "sin"    # Waypoints type: ellipse or sin
+        self.WaypointType = "ellipse"    # Waypoints type: ellipse or sin
         self.waypoints = self.get_waypoints(self.WaypointType)
-        self.lookahead_distance = 1    # [m] Pure Pursuit Algorithm Parameters
+        self.lookahead_distance = 0.3   # [m] Pure Pursuit Algorithm Parameters
         self.read_threshold = 1.0    # [m] # Reach threshold, sum formation error is lower then this, move to next target virtual structure
         self.old_nearest_point_index = None
         self.last_index = len(self.waypoints[0]) - 1
@@ -36,6 +37,9 @@ class PurePursuitTurtlebot3:
         
         # Create a velocity publisher
         self.velocity_publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+
+        # Path Visualization publisher
+        self.waypoints_publisher = rospy.Publisher("waypoints", Marker, queue_size=10)
         
         # Set a rate for publishing messages
         self.rate = rospy.Rate(10) # 10 Hz
@@ -65,6 +69,9 @@ class PurePursuitTurtlebot3:
             twist.linear.x = v
             twist.angular.z = w
             self.velocity_publisher.publish(twist)
+
+            # visualize
+            self.waypoint_rviz()
             self.rate.sleep()
     
     def get_target_point(self):
@@ -118,6 +125,13 @@ class PurePursuitTurtlebot3:
         ellipse: 2a = 20, 2b = 10
         sin: long = 20, width = 13
         return: path X (list), path Y (list)
+
+        self.lookahead_distance should > nearest two waypoint distance.
+        the density of the waypoints are affect the path tracking performance
+
+        sin: path_X = np.arange(0, 20, 0.1); 0.1 affect density
+        ellipse: thetas = np.linspace(-np.pi, np.pi, 200); 200 affect density
+
         '''
         path_X, path_Y = None, None
         if waypoint_type == "sin":
@@ -125,7 +139,7 @@ class PurePursuitTurtlebot3:
             path_Y = [math.sin(ix / 2.0) * ix / 2.0 for ix in path_X]
         elif waypoint_type == "ellipse":
             thetas = np.linspace(-np.pi, np.pi, 200)
-            a, b = 10, 5
+            a, b = 5, 2.5
             path_X = [a * np.cos(theta) + a for theta in thetas]
             path_Y = [b * np.sin(theta) for theta in thetas]
         else:
@@ -190,6 +204,34 @@ class PurePursuitTurtlebot3:
         if np.pi / 2 < alpha < np.pi or -np.pi < alpha < -np.pi / 2:
             v = -v     
         return v, w
+    
+    def waypoint_rviz(self):
+        # visualize waypoints
+        waypoints = []
+        for x, y in zip(self.waypoints[0], self.waypoints[1]):
+            waypoint = Point()
+            waypoint.x = x
+            waypoint.y = y
+            waypoint.z = 0.0
+            waypoints.append(waypoint)
+
+        waypoints_visualize = Marker()
+        waypoints_visualize.header.frame_id = "odom"
+        waypoints_visualize.header.stamp = rospy.Time.now()
+        waypoints_visualize.ns = "path"
+        waypoints_visualize.id = 0
+        waypoints_visualize.action = Marker.ADD
+        waypoints_visualize.pose.orientation.w=0.0
+        waypoints_visualize.color.r = 0.0
+        waypoints_visualize.color.g = 0.0
+        waypoints_visualize.color.b = 1.0
+        waypoints_visualize.color.a = 1.0
+        waypoints_visualize.scale.x = 0.1
+        waypoints_visualize.type = 4
+
+        waypoints_visualize.points = waypoints
+
+        self.waypoints_publisher.publish(waypoints_visualize)
 
 if __name__ == '__main__':
     try:

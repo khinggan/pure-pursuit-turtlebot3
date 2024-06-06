@@ -5,7 +5,7 @@ Turtlebot3 is diff-drive robot, however, example code of pure pursuit [1] is for
 
 First, the target point on waypoints is determined by one look ahed distance, then, `move2pose` code [2] is used to control turtlebot3 to the target point.
 
-More detail of algorithm is on original paper [3]
+More detail of algorithm is on original paper [3].
 
 ## Requirement
  - Ubuntu 20.04
