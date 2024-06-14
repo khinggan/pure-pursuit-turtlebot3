@@ -9,8 +9,8 @@ import math
 import tf
 
 ## Turtlebot3 Parameters
-MAX_LINEAR_SPEED = 0.22
-MAX_ANGULAR_SPEED = 2.84
+MAX_LINEAR_SPEED = 0.15
+MAX_ANGULAR_SPEED = 1.5
 
 class PurePursuitTurtlebot3:
     def __init__(self):
@@ -139,7 +139,7 @@ class PurePursuitTurtlebot3:
             path_Y = [math.sin(ix / 2.0) * ix / 2.0 for ix in path_X]
         elif waypoint_type == "ellipse":
             thetas = np.linspace(-np.pi, np.pi, 200)
-            a, b = 5, 2.5
+            a, b = 2, 1.3
             path_X = [a * np.cos(theta) + a for theta in thetas]
             path_Y = [b * np.sin(theta) for theta in thetas]
         else:

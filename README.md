@@ -18,6 +18,9 @@ More detail of algorithm is on original paper [3].
 ```bash
 roslaunch turtlebot3_gazebo turtlebot3_empty_world.launch
 
+roslaunch turtlebot3_gazebo turtlebot3_gazebo_rviz.launch
+# Add -> By topic -> Marker
+
 rosrun pure-pursuit-turtlebot3 pp-tb3.py
 ```
 
