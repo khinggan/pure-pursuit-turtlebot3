@@ -26,7 +26,6 @@ class PurePursuitTurtlebot3:
         self.WaypointType = "ellipse"    # Waypoints type: ellipse or sin
         self.waypoints = self.get_waypoints(self.WaypointType)
         self.lookahead_distance = 0.3   # [m] Pure Pursuit Algorithm Parameters
-        self.read_threshold = 1.0    # [m] # Reach threshold, sum formation error is lower then this, move to next target virtual structure
         self.old_nearest_point_index = None
         self.last_index = len(self.waypoints[0]) - 1
         self.target_idx = 0    # target index, target virtual structure can be got from this. 
